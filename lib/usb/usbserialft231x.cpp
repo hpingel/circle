@@ -42,6 +42,10 @@ static const char FromFt231x[] = "ft231x";
 #define FTDI_SIO_SET_DATA_STOP_BITS_1	(0x0 << 11)
 #define FTDI_SIO_SET_DATA_STOP_BITS_2	(0x2 << 11)
 
+#define FTDI_SIO_SET_FLOW_CTRL_REQUEST_TYPE 0x40
+#define FTDI_SIO_SET_FLOW_CTRL_REQUEST FTDI_SIO_SET_FLOW_CTRL
+#define FTDI_SIO_RTS_CTS_HS (0x1 << 8)
+
 CUSBSerialFT231XDevice::CUSBSerialFT231XDevice (CUSBFunction *pFunction)
 :	CUSBSerialDevice (pFunction, 2)
 {
@@ -92,17 +96,17 @@ boolean CUSBSerialFT231XDevice::Configure (void)
 		return FALSE;
 	}
 
-	if (pHost->ControlMessage (GetEndpoint0 (),
-				   REQUEST_OUT | REQUEST_VENDOR | REQUEST_TO_DEVICE,
-				   FTDI_SIO_SET_FLOW_CTRL,
-				   0,
-				   0,
-				   0, 0) < 0)
-	{
-		CLogger::Get ()->Write (FromFt231x, LogError, "Cannot disable flow control");
+if (pHost->ControlMessage (GetEndpoint0 (),
+				 REQUEST_OUT | REQUEST_VENDOR | REQUEST_TO_DEVICE,
+				 FTDI_SIO_SET_FLOW_CTRL,
+				 FTDI_SIO_RTS_CTS_HS,
+				 0,
+				 0, 0) < 0)
+{
+	CLogger::Get ()->Write (FromFt231x, LogError, "Cannot set flow control to RTS/CTS");
 
-		return FALSE;
-	}
+	return FALSE;
+}
 
 	if (!SetBaudRate (DEFAULT_BAUD_RATE))
 	{
